@@ -23,4 +23,4 @@ class SystemMode(str, Enum):
 
 
 # Set current system mode
-config["mode"] = SystemMode.TEST
+config["mode"] = SystemMode.PROD
