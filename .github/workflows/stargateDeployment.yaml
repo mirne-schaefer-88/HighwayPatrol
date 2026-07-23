@@ -1,0 +1,66 @@
+name: Deploy HP Stargate
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Select the CDK action"
+        required: true
+        type: choice
+        options:
+          - deploy
+          - destroy
+
+      baseStackName:
+        description: "Choose the 'baseStackName' used by CDK and the Dispatcher. Must match the value in superGlblVars.py"
+        required: true
+        type: string
+
+env:
+  AWS_REGION: "us-east-1"
+
+permissions:
+  id-token: write  # Required for requesting the JWT
+  contents: read   # Required for actions/checkout
+
+jobs:
+  deployHP:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Use Python3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"     # needed because HP lambdas run on python 3.13, so dependencies must be installed with the same version
+
+      - name: Install setuptools
+        run: pip3 install setuptools # needed because distutils was removed in python 3.12, setuptools contains a copy of distutils
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.IAMROLE_GITHUB }}
+          role-session-name: GitHub-Action-Role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install AWS CDK
+        run: "npm install -g aws-cdk"
+
+      - name: Install Requirements 
+        run: "pip3 install -r devRequirements.txt"
+
+      - name: Deploy Stargate Stack
+        if: github.event.inputs.action == 'deploy'
+        run: |
+          cdk deploy --context baseStackName=${{ github.event.inputs.baseStackName }} --context selectedStack="${{ github.event.inputs.baseStackName }}-stargate" --exclusively true --concurrency 50 "${{ github.event.inputs.baseStackName }}-stargate"
+
+      - name: Destroy Stargate Stack
+        if: github.event.inputs.action == 'destroy'
+        run: |
+          cdk destroy --context baseStackName=${{ github.event.inputs.baseStackName }} --context selectedStack="${{ github.event.inputs.baseStackName }}-stargate" true --concurrency 50 "${{ github.event.inputs.baseStackName }}-stargate" --force

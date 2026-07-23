@@ -1,0 +1,54 @@
+default:
+    # When deploying on  make sure to set environment variable "BP"
+    # with the correct managed-boundary-policy value
+    # i.e.: export BP="xxx.yyy.DeveloperFull"
+    # This is made to support deployment in multiple environments
+    # If not set, failure on  account may reflect as the following:
+    #   UnauthorizedTaggingOperation), Resource handler returned message: 
+    #   Encountered a permissions error performing a tagging operation, 
+    #   please add required tag permissions
+
+    # Different FFMPEG layers because they serve different purposes
+    # The transcoder uses ffmpeg proper
+    # The collectors use ffprobe for getting metadata from segments
+    # The streamerCollector uses the ffmpeg streaming client for downloads
+    # The *-isolated layers are static ffmpeg builds
+    ffmpegIsolated: "ffmpeg-isolated"
+    ffprobeIsolated: "ffprobe-isolated"
+    ffmpegStreamCol: "ffmpeg-for-streaming-isolated"
+
+    # Lambda layer for the YT-DLP library
+    ytdlp: "yt-dlp-layer"
+
+prod:
+    # For 
+    AUDIT_ACCOUNT: 980426670992
+    VPC_NAME: "1 us-east-1"
+    FULL_NAT_SUBNETS: 
+        - subnet-0380967cbae9bcd31
+        - subnet-0ddff0c0ee82e2b6b
+    ECS_SUBNET: subnet-0380967cbae9bcd31
+    EC2_KEYPAIR: noNeedInProd
+    WHIRL_SG: sg-06f23527f6ff61a6a
+    SEC_GROUP: sg-0d9004647b7137386 # default
+
+test:
+    # For 
+    AUDIT_ACCOUNT: 920735991196
+    VPC_NAME: "1 us-east-1"
+    FULL_NAT_SUBNETS: 
+        - subnet-090f7295a71fb1d08
+        - subnet-053252dbc15decf66
+    ECS_SUBNET: subnet-053252dbc15decf66
+    EC2_KEYPAIR: hpVPN-testKey
+    WHIRL_SG: sg-001642ba0ceca6878
+    SEC_GROUP: sg-0ce7ee8d0c2608e64 # m-ch-test default secgroup
+
+dev:
+    # For 
+    # Note that in , the containers don't have AWS access
+    AUDIT_ACCOUNT: 920735991196
+    VPC_NAME: "TGW-Development-"
+    ECS_SUBNET: subnet-0384460d8e0751796
+    EC2_KEYPAIR: raysNewKeys
+    SEC_GROUP: sg-0f904f1fcc1815fcc  # dev machine

@@ -1,0 +1,20 @@
+# This file lists libraries required by the lambdas
+# This is used in the individual stack files (specifically the collectionStack) during lambda buildup
+# Notice that more libraries are used for development; those are in devRequirements.txt
+# This file is for dependencies that will be installed with the '--only-binary' flag
+# This flag instructs pip to install only pre-compiled binaries
+# Some libriaries (such as pycurl) do not have pre-built binaries and must be installed
+# using the 'lambdaRequirements.txt file
+
+bs4
+m3u8
+pytz
+boto3
+brotli
+base36
+certifi
+keyring
+requests
+xmltodict
+pyopenssl
+fake_useragent
